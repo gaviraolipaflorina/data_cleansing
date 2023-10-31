@@ -1,0 +1,213 @@
+{% extends "includes/templates.html" %} {% block title %}Main App{% endblock %}
+{% block main %}
+
+    <!--   Big container   -->
+    <div class="container">
+      {% include 'includes/error.html' %}
+      <div class="row text-center justify-content-center">
+        <div class="row" style="display: inline; width: 100%">
+          <h2>Excel data cleaner</h2>
+        </div>
+        <h4>
+          Perbaiki data excel dari format format. Upload satu file excel dan temukan
+          perbedaannya
+        </h4>
+      </div>
+      <div class="row outer-box border text-center p-5">        
+        <div class="w-100">
+      <!-- <div class="row outer-box border text-center">        
+          <div class="m-5 w-100"> -->
+            {% if total_false==0 %}
+              
+            <a class="btn-submit" href="{{url_for('static', filename='uploads/fix/'+filenameXls)}}"
+              >Download File (xls)</a
+            >
+            {% else %}
+            <a class="btn-submit" href="{{url_for('static', filename='uploads/revisi/'+fileNoExt+'-full.xls')}}"
+              >Download Full</a
+            >
+            <!-- <a class="btn-submit" href="{{url_for('static', filename='uploads/revisi/'+fileNoExt+'-valid-revisi.xls')}}"
+              >Download Valid</a
+            > -->
+
+            {% endif %}
+          </div>
+          <!-- <div class="w-100"> -->
+             <div class="mt-5 w-100">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn-submit" data-toggle="modal" data-target="#exampleModal">
+              Daftar Yang Telah Di Proses
+            </button>
+          </div>
+        
+        <!-- <div class="row inner-box border text-center w-100">
+            <div class="table-result">
+              <table id="DataTable" class="cell-border" style="width: 100%">
+                <thead>
+                  <th>No.</th>
+                  {%for i in range(0, column|length)%}
+                  <th>
+                    {{column[i]}} {% if column[i]=="Agama" %}
+                    <i
+                      class="fa fa-info-circle"
+                      data-toggle="tooltip"
+                      data-placement="top"
+                      title="ISLAM, HINDU, BUDHA, PROTESTAN, KATHOLIK, KONGHUCU"
+                    ></i>
+                  </th>
+                  {% endif %} {%endfor%}
+                </thead> -->
+                <!-- prettier-ignore -->
+                <!-- <tbody>
+                    {%for i in range(0, df_processed|length)%}
+                    <tr>
+                      <td>{{i+1}}</td>
+                      {%for j in range(0, df_processed[i]|length)%}
+                      {% set data_lama = df_upload[i][j]|string| replace("'", "")  %}
+                      {% set data_baru = df_processed[i][j]|string| replace("'", "")  %}
+                      <td {% if (data_lama != data_baru) or (data_lama == "") %} class="beda" {% endif %}>
+                        <p style="font-weight: bold;">
+                            {{data_baru}} 
+                        </p>
+                        {% if data_lama != data_baru %}
+                        <p style="color: rgb(80, 80, 80);">Data Sebelumnya : {{data_lama}}</p>
+                        {% endif %}
+                      </td>
+                      {%endfor%}
+                    </tr>
+                    {%endfor%}
+                  </tbody>
+              </table>
+            </div>
+        </div> -->
+      </div>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Daftar Revisi</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Jika ada yang tidak bisa diperbaiki oleh sistem ini, mohon diperbaiki secara Manual 
+            </p>
+            <p>Dengan cara download excel ini, lakukan perubahan, dan coba Upload kembali</p>
+            <input type="text" id="searchInput" placeholder="Search..." name=" " >
+            <table class="tbl-revisi">
+              <thead>
+                <th>Baris</th>
+                <th style="padding-left: 75px;" >Field</th>
+                <!-- <th>Baris</th> -->
+                <th style="padding-left: 170px;">Data Lama</th>
+
+                <th style="padding-left: 160px;">Data Baru</th>              
+            </thead>
+            </table>
+              <table id="table-revisi" class="tbl-revisi">
+              <tbody class="rvs">
+                {%for i in range(0, daftar_revisi|length)%}
+                <tr >
+                  <td>{{daftar_revisi[i][1]+1}}</td>
+                  <!-- <td>{{i+1}}</td> -->
+                  <td>{{daftar_revisi[i][0]}}</td>
+                 
+                  <td>{{daftar_revisi[i][3]}}</td>
+                  <td>{{daftar_revisi[i][2]}}</td>
+                </tr>
+                {%endfor%}
+              </tbody>
+              
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <footer></footer>
+    <div class="footer">
+      <div class="container text-center"></div>
+    </div>
+    
+    {% endblock %} {% block script %}
+<script>
+  var table = $("#DataTable").DataTable({
+    paging: false,
+    ordering: false,
+    info: false,
+    searching: false,
+    fixedColumns: {
+      left: 1,
+    },
+  });
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+    $('[name="filter-file"]').on("change", function () {
+      var filter = $(this).val();
+      table.destroy();
+      $("#DataTable").remove();
+      const a = $("#tabel-daftar-nama-file");
+      let url = "{{ url_for('excel.daftar_excel') }}" + filter;
+      fetch(url)
+        .then((response) => response.text())
+        .then((data) => {
+          $("#tabel-daftar-nama-file").html(data);
+
+          // Inisialisasi tabel menggunakan DataTable setelah data dimuat
+          table = $("#DataTable").DataTable({
+            paging: false,
+            ordering: false,
+            info: false,
+            searching: false,
+            fixedColumns: {
+              left: 1,
+            },
+          });
+        })
+        .catch((error) => console.error("Error:", error));
+    });
+  });
+
+  // Fungsi untuk melakukan pencarian
+  function search() {
+    var input, filter, table,tr, td, i, j, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("table-revisi");
+    tr = table.getElementsByTagName("tr");
+    
+
+    for (i = 0; i < tr.length; i++) {
+        var found = false; // Flag untuk menandai apakah pencarian berhasil pada baris tertentu
+        td = tr[i].getElementsByTagName("td");
+        for (j = 0; j < td.length; j++) {
+            txtValue = td[j].textContent || td[j].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                found = true;
+                break; // Jika ditemukan, keluar dari loop kolom
+            }
+        }
+        // Menampilkan atau menyembunyikan baris berdasarkan hasil pencarian
+        if (found) {
+            tr[i].style.display = "";
+        } else {
+            tr[i].style.display = "none";
+            
+        }
+    }
+}
+
+// Tambahkan event listener untuk pemanggilan fungsi pencarian saat input berubah
+document.getElementById("searchInput").addEventListener("input", search);
+
+</script>
+{% endblock %}
+
+

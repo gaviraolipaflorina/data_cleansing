@@ -1,0 +1,85 @@
+{% extends "includes/templates.html" %} {% block title %}Main App{% endblock %}
+{% block main %}
+
+<!--   Big container   -->
+<div class="container">
+  {% include 'includes/error.html' %}
+  <div class="row text-center justify-content-center">
+    <div class="row" style="display: inline; width: 100%">
+      <h2>Aktifitas</h2>
+    </div>
+    <h4>Daftar aktifitas yang terjadi di aplikasi</h4>
+  </div>
+  <div class="row outer-box border text-center" id="daftar-excel">
+    <div class="container my-5">
+      <div class="table-responsive" id="tabel-daftar-nama-file">
+        <table
+          class="table table-bordered"
+          id="DataTable"
+          width="100%"
+          cellspacing="0"
+        >
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Username</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%for activity in activities%}
+            <tr>
+              <td>{{loop.index}}</td>
+              <td>{{activity.username}}</td>
+              <td>{{activity.description}}</td>
+              <td>
+                <button
+                  type="button"
+                  data-id="{{activity.id}}"
+                  class="btn btn-danger btn-sm btn-delete"
+                  data-remote="{{ url_for('activity.delete',id=activity.id ) }}"
+                  data-toggle="modal"
+                  data-target="#deleteModal"
+                  data-title="Delete User"
+                  title="Delete User"
+                >
+                  <i class="far fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+            {%endfor%}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+{% include 'pages/activity/modalDelete.html' %} {% endblock %} {% block script
+%}
+<script>
+  var table = $("#DataTable").DataTable({
+    paging: false,
+    ordering: false,
+    info: false,
+    searching: false,
+    fixedColumns: {
+      left: 1,
+    },
+  });
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+
+    $(".btn-delete").on("click", function () {
+      var id = $(this).data("id");
+      var url = $(this).data("remote");
+      var title = $(this).data("title");
+      $("#id_user").val(id);
+      $("#deleteModal").find(".modal-title").text(title);
+      $("#deleteModal").find("form").attr("action", url);
+    });
+  });
+</script>
+{% endblock %}
